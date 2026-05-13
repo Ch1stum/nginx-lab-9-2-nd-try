@@ -2,24 +2,27 @@ name: PHP Docker CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Clone repo
         uses: actions/checkout@v4
 
-      - name: Start Docker containers
+      - name: Start docker
         run: docker compose up -d --build
 
       - name: Install dependencies
-        run: docker compose exec -T php bash -c "composer install"
+        run: docker compose exec -T php composer install
+
+      - name: Fix permissions
+        run: docker compose exec -T php chmod +x vendor/bin/phpunit
 
       - name: Run tests
-        run: docker compose exec -T php bash -c "vendor/bin/phpunit tests"
+        run: docker compose exec -T php php vendor/bin/phpunit tests
 
       - name: Stop containers
         if: always()
